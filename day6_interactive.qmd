@@ -9,3 +9,59 @@ library(tidyverse)
 library(here)
 library(janitor)
 ```
+
+```{r}
+# read csv
+wb_indicators <- read_csv(here("data", "wb_indicators.csv"), na = c("..", ""))
+```
+
+```{r}
+# tidy the data- pivot longer on year
+wb_indicators_long <- wb_indicators %>% 
+  pivot_longer(cols = `2001 [YR2001]`:`2020 [YR2020]`,
+               names_to = "Year",
+               values_to = "indicator_value") 
+# col name in single quotes lets R know that that is a column name
+# values_to puts the values associated with each column into their own column
+```
+
+```{r}
+# separating the year and year code into two different columns
+# negative in front of a column gets rid of it in select
+# select() references columns, filter() references rows
+wb_indicators_clean <- wb_indicators_long %>% 
+  separate(col = Year,
+           into = c("year", "year_chr"), sep = " ") %>% 
+  dplyr::select(-year_chr, -`Country Code`, -`Series Code`)
+
+# unique () returns all of the unique observations for a variable
+unique(wb_indicators_clean$`Series Name`)
+```
+
+```{r}
+# drop_na () will drop the entire row where an observation in a column has an NA value
+# names_from is where you get the names for the columns from (unique observation in "series name")
+# values_from is where you get the associated values from (indicator_values column)
+# rename(new name = old name)
+wb_indicators_tidy <- wb_indicators_clean %>% 
+  tidyr::drop_na(`Series Name`) %>% 
+  tidyr::pivot_wider(names_from = `Series Name`,
+                     values_from = indicator_value) %>% 
+  dplyr::rename(country = "Country Name",
+                access_fuels_pp = "Access to clean fuels and technologies for cooking (% of population)",
+                access_electricty_pp = "Access to electricity (% of population)",
+                co2_emissions_kt = "CO2 emissions (kt)",
+                fossil_fuel_cons_pt = "Fossil fuel energy consumption (% of total)",
+                water_stress = "Level of water stress: freshwater withdrawal as a proportion of available freshwater resources") %>% 
+  dplyr::mutate(year = as.numeric(year))
+```
+
+```{r}
+ggplot(data = wb_indicators_tidy, aes(x = year,
+                                      y = co2_emissions_kt)) +
+  geom_line(aes(color = country), show.legend = FALSE)
+
+# in the code chunk above, we changed class of "year" from character to numeric. You can also do it in the ggplot code by this:
+# ggplot(data = wb_indicators_tidy, aes(x = as.numeric(year), y = co2_emissions_kt))
+  
+```
