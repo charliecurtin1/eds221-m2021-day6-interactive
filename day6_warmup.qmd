@@ -1,0 +1,18 @@
+---
+title: "Day 6 Warmup"
+format: html
+editor: visual
+---
+
+## given the vector "brown bear", "red bird", "yellow duck", "blue horse". Write code to recreate text of the first 3 pages in the book "Brown bear, brown bear, what do you see?"
+
+```{r}
+animal_vec <- c("brown bear", "red bird", "yellow duck", "blue horse")
+```
+
+```{r}
+for (i in 1:(length(animal_vec) - 1)) {
+    print(paste(animal_vec[i], ",", animal_vec[i], ",", "what do you see?",
+          "I see a", animal_vec[i + 1], "looking at me."))
+}
+```
